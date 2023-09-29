@@ -142,7 +142,7 @@ def upload(filePath, accessToken, folder_id, BASE_ENDPOINT):
             else:
                 # print(f"Upload Progress: {uploadReq.json()['nextExpectedRanges']}")
                 counter += 1
-    print(f"File Size: {str(totalFileSize/1048576)} MB, Upload Time: {round(int(time.time() - start_time))}")
+    print(f"File Size: {str(round(totalFileSize/1048576))} MB, Upload Time: {round(int(time.time() - start_time))}")
     return 
 
 def cancelUpload(uploadUrl):
