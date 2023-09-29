@@ -149,8 +149,8 @@ def cancelUpload(uploadUrl):
     return
 
 
-CLIENT_SECRET = 'V0d8Q~tecakZRMNQyQOZj~3RWb3rx~zKbbnNMdoV'
-CLIENT_ID = '684496de-c467-4284-a241-06de5c66dc75'
+CLIENT_SECRET = 'SAQ8Q~z.m5tFNjZDfXi1XaTPSmMPeb0tl00v-aGE'
+CLIENT_ID = '9104ea49-9689-4f3c-8819-da1b156b9edf'
 SCOPES = ['User.Read', 'Files.ReadWrite.All']
 files = []
 
