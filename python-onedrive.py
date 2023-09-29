@@ -3,6 +3,7 @@ import msal
 import glob
 import json
 import time
+import yaml
 import requests
 
 def handleToken(client_id, client_secret, scopes):
@@ -148,20 +149,17 @@ def cancelUpload(uploadUrl):
     requests.delete(uploadUrl)
     return
 
+with open('config.yml', 'r') as creds:
+    app_creds = yaml.safe_load(creds)
+    GRAPH_API_ENDPOINT = app_creds['graph_api_endpoint']
+    CLIENT_ID = app_creds['ms_app']['client_id']
+    CLIENT_SECRET = app_creds['ms_app']['client_secret']
+    remoteFolderPath = app_creds['remote_folder_path']
 
-CLIENT_SECRET = 'SAQ8Q~z.m5tFNjZDfXi1XaTPSmMPeb0tl00v-aGE'
-CLIENT_ID = '9104ea49-9689-4f3c-8819-da1b156b9edf'
 SCOPES = ['User.Read', 'Files.ReadWrite.All']
 files = []
 
-GRAPH_API_ENDPOINT = 'https://graph.microsoft.com/v1.0'
-remoteFolderPath = 'temp' # No '/' at the end or beginning of the path. Must include proper path from root (excluded)
-
 accessToken = handleToken(CLIENT_ID, CLIENT_SECRET, SCOPES)[0]
-# accessToken = input("Enter AccessToken: ")
-
-# print(f'Access_Token: {accessToken}')
-
 path = str(input("\n\nEnter File Path to upload: "))
 
 if os.path.isfile(path):

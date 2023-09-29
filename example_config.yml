@@ -1,0 +1,6 @@
+graph_api_endpoint: 'https://graph.microsoft.com/v1.0'
+remote_folder_path: '' # No '/' at the end or beginning of the path. Must include proper path from root (excluded)
+
+ms_app:
+  client_id: '{Your App Client ID}'
+  client_secret: '{App CLient Secret}'
