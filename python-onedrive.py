@@ -5,6 +5,7 @@ import json
 import time
 import yaml
 import requests
+from tqdm import tqdm
 
 def handleToken(client_id, client_secret, scopes):
     
@@ -108,10 +109,13 @@ def upload(filePath, accessToken, folder_id, BASE_ENDPOINT):
 
     # Preparing Data to upload
     totalFileSize = os.path.getsize(filePath)
-    chunkSize = 327680 * 300 # 91 MB
+    chunkSize = 327680 * 3 # 91 MB
     totalChunks = totalFileSize // chunkSize
     leftoverChunk = totalFileSize - (totalChunks * chunkSize)
     counter = 0
+
+    # initiating tqdm
+    pbar = tqdm(total=totalChunks)
 
     start_time = time.time()
     with open(filePath, 'rb') as data:
@@ -138,11 +142,15 @@ def upload(filePath, accessToken, folder_id, BASE_ENDPOINT):
             )
 
             if 'createdBy' in uploadReq.json():
-                print('File Uploaded Successfully.')
+                pbar.update(1)
+                # print('File Uploaded Successfully.')
             else:
-                # print(f"Upload Progress: {uploadReq.json()['nextExpectedRanges']}")
                 counter += 1
-    print(f"File Size: {str(round(totalFileSize/1048576))} MB, Upload Time: {round(int(time.time() - start_time))}")
+                pbar.update(1)
+
+    pbar.close()
+    print(f" + File Size: {str(round(totalFileSize/1048576))} MB, Upload Time: {round(int(time.time() - start_time))} sec.")
+    print("===========================================================")
     return 
 
 def cancelUpload(uploadUrl):
@@ -157,29 +165,40 @@ with open('config.yml', 'r') as creds:
     remoteFolderPath = app_creds['remote_folder_path']
 
 SCOPES = ['User.Read', 'Files.ReadWrite.All']
+Items = []
 files = []
 
 accessToken = handleToken(CLIENT_ID, CLIENT_SECRET, SCOPES)[0]
-path = str(input("\n\nEnter File Path to upload: "))
 
-if os.path.isfile(path):
-    files.append(path)
-elif os.path.isdir(path):
-    for file in glob.glob(f'{path}/*.*'):
-        files.append(file)
-else:
-    print(f"Unknown Directory Provided: {path}")
-    exit()
+print("Provide the files below, enter 0 to exit.")
+while True:
+    entity = str(input("Enter the path of the file/folder you want to upload: "))
+    if entity == 0 or entity == '0':
+        break
+    else:
+        Items.append(entity)
+print("Starting Upload.")
 
-# Creating Folder on Drive
-if len(files) != 1:
-    folderId = createFolder(str(os.path.basename(path)), accessToken, remoteFolderPath, GRAPH_API_ENDPOINT)
-else:
-    folderName = os.path.splitext(str(os.path.basename(files[0])))[0]
-    folderId = createFolder(folderName, accessToken, remoteFolderPath, GRAPH_API_ENDPOINT)
+for path in Items:
+    files = []
+    if os.path.isfile(path):
+        files.append(path)
+    elif os.path.isdir(path):
+        for file in glob.glob(f'{path}/*.*'):
+            files.append(file)
+    else:
+        print(f"Unknown Directory Provided: {path}")
+        exit()
 
-# Uploading all files one by one
-print("Total items to upload: "+str(len(files))+"\n")
-for file in files:
-    print(f"Uploading: {os.path.basename(file)}...", end=" ")
-    upload(file, accessToken, folderId, GRAPH_API_ENDPOINT)
+    # Creating Folder on Drive
+    if len(files) != 1:
+        folderId = createFolder(str(os.path.basename(path)), accessToken, remoteFolderPath, GRAPH_API_ENDPOINT)
+    else:
+        folderName = os.path.splitext(str(os.path.basename(files[0])))[0]
+        folderId = createFolder(folderName, accessToken, remoteFolderPath, GRAPH_API_ENDPOINT)
+
+    # Uploading all files one by one
+    # print("Total items to upload: "+str(len(files))+"\n")
+    for file in files:
+        print(f" + Currently Uploading: {os.path.basename(file)}...")
+        upload(file, accessToken, folderId, GRAPH_API_ENDPOINT)
